@@ -38,6 +38,11 @@
         path: /opt/tower
         state: directory
 
+    - name: Ensure directory /etc/ansible
+      file:
+        path: /etc/ansible
+        state: directory
+
     - name: Copy over ansible hosts file
       copy:
         src: "{{output_dir}}/hosts-{{ env_type }}-{{ guid }}"
@@ -107,23 +112,50 @@
         block: |
           [general]
           host = tower1.{{guid}}.example.opentlc.com
+          host = {{ hostvars[groups['towers']|sort|first].shortname }}.{{ hostvars.localhost.aws_dns_zone_public_prefix | d('') }}{{ guid }}.{{ subdomain_base_suffix | regex_replace('^\\.', '') }}
           username = admin
           password = {{tower_admin_password}}
+          verify_ssl = false
+      when: '"aws_dns_zone_public_prefix" in hostvars.localhost'
+
+    - name: Configure the tower cli file
+      blockinfile:
+        path: "~/.tower_cli.cfg"
+        create: true
+        block: |
+          [general]
+          host = tower1.{{guid}}.example.opentlc.com
+          host = {{ hostvars[groups['towers']|sort|first].shortname }}.{{ guid }}.{{ subdomain_base_suffix | regex_replace('^\\.', '') }}
+          username = admin
+          password = {{tower_admin_password}}
+          verify_ssl = false
+      when: '"aws_dns_zone_public_prefix" not in hostvars.localhost'
 
     - name: Configure the tower cli file
       template:
         src: "../configs/{{ env_type }}/files/tower_cli.j2"
         dest: "~/.tower_cli.cfg"
         mode: 0640
+
     - name: Download Licence file
       get_url:
         url: "{{license_file_url}}"
         dest: /root/license.txt
+      when: license_file_url is defined
+
+    - name: Create license.txt
+      copy:
+        dest: /root/license.txt
+        content: "{{ tower_license }}"
+      when: license_file_url is not defined
+      
     - name: Append file
       lineinfile:
         path: /root/license.txt
         insertbefore: '"company_name.*"'
-        line: '"eula_accepted" : "true",'
+        regexp: '"eula_accepted"'
+        line: '"eula_accepted" : true,'
+      when: license_file_url is defined
 
     - name: Add the tower license
       command: |

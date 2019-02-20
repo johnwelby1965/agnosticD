@@ -150,7 +150,11 @@ Resources:
               - NameServers
     {% endif %}
 
-{% for instance in instances %}
+{% for instance in instances
+  if ('regions' in instance
+       and aws_region in instance.regions)
+     or 'regions' not in instance
+  %}
 {% if instance['dns_loadbalancer'] | d(false) | bool
   and not instance['unique'] | d(false) | bool %}
   {{instance['name']}}DnsLoadBalancer:

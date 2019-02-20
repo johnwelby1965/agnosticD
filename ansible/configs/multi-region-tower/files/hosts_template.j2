@@ -1,0 +1,25 @@
+[GenericExample:vars]
+
+###########################################################################
+### Ansible Vars
+###########################################################################
+timeout=60
+ansible_become=yes
+ansible_user={{remote_user}}
+
+
+[GenericExample:children]
+towers
+support
+
+[towers]
+## These are the towers
+{% for host in groups['towers'] %}
+{{ hostvars[host].internaldns }} public_host_name={{ hostvars[host].shortname }}.{{ guid }}{{subdomain_base_suffix}} ssh_host={{host}}
+{% endfor %}
+
+## These are the supporthosts
+[support]
+{% for host in groups['support'] %}
+{{ hostvars[host].internaldns }} ssh_host={{host}}
+{% endfor %}

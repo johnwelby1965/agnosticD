@@ -1,0 +1,49 @@
+[GenericExample:vars]
+
+###########################################################################
+### Ansible Vars
+###########################################################################
+[all:vars]
+ansible_become=true
+admin_password="{{tower_admin_password}}"
+
+{% for host in [groups['support']|sort|first] %}
+pg_host='{{ hostvars[host].internaldns }}'
+{% endfor %}
+pg_port='5432'
+
+pg_database='awx'
+pg_username='awx'
+pg_password="{{tower_admin_password}}"
+
+rabbitmq_port=5672
+rabbitmq_vhost=tower
+
+rabbitmq_username=tower
+rabbitmq_password="{{tower_admin_password}}"
+rabbitmq_cookie=cookiemonster
+
+rabbitmq_use_long_name=true
+
+[GenericExample:children]
+# These
+tower
+database
+
+[tower]
+## These are the towers
+{% for host in groups['towers']|sort %}
+{{ hostvars[host].internaldns }} public_host_name={{ hostvars[host].shortname }}.{{ guid }}{{subdomain_base_suffix}} ssh_host={{host}}
+{% endfor %}
+
+[database]
+{% for host in [groups['support']|sort|first] %}
+{{ hostvars[host].internaldns }}
+{% endfor %}
+
+{% for region in target_groups %}
+[isolated_group_{{region.name}}]
+{% for host in groups['isolated_tower'] if host.region == region.region %}
+{{ host }} controller=tower
+{% endfor %}
+{% endfor %}

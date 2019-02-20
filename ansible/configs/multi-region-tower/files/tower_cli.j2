@@ -1,0 +1,7 @@
+[general]
+{% for host in [groups['towers']|sort|first] %}
+host = {{ hostvars[host].shortname }}.{{ hostvars.localhost.aws_dns_zone_public_prefix | d('') }}{{guid}}.{{ subdomain_base_suffix | regex_replace('^\\.', '') }}
+{% endfor %}
+username = admin
+password = {{tower_admin_password}}
+verify_ssl = false
