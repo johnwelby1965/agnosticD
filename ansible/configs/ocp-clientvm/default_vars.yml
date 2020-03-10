@@ -53,6 +53,8 @@ docker_size: '200'
 # The next flag is 1 by default. If it is set to more than 1 then instead of creating
 # clientvm.guid.baseurl it will create clientvm{1..num_users}.guid.baseurl
 num_users: 1
+# no more than 1 user per clientvm
+node_count: {{ num_users }}
 
 install_bastion: true
 install_common: true

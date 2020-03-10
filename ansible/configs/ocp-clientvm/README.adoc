@@ -1,5 +1,14 @@
 = OCP Client VM (ocp-clientvm)
 
+
+== Notes
+
+`num_users` will create that number of ClientVMs.  Default is 1.
+* Conflicts with `node_count` which will attempt to build an inventory and SSH to that many nodes
+
+As default, `node_count` is set to `num_users`
+
+
 == Running Ansible Playbook
 
 * You can run the playbook with the following arguments to overwrite the default variable values:
