@@ -82,7 +82,7 @@
     OS_USER_DOMAIN_NAME: "{{ osp_auth_user_domain }}"
   command: >-
     openstack stack create --dry-run -vvv
-    -t {{ heat_master_template }} -f json base-stack-{{ sandbox-guid }}-{{ 99999| random }}
+    -t {{ heat_master_template }} -f json base-stack-{{ sandbox_guid }}-{{ 99999| random }}
   changed_when: false
   register: heat_validation
   until: heat_validation is succeeded
