@@ -1,2 +1,6 @@
 ---
-- import_tasks: create_osp_template.yml
+- when: not osp_sandbox
+  include_tasks: create_osp_template.yml
+
+- when: osp_sandbox
+  include_tasks: create_osp_sandbox_template.yml

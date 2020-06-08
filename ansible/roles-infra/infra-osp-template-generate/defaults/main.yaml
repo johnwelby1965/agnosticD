@@ -9,6 +9,8 @@ all_ssh_authorized_keys: "{{ opentlc_admin_pub_keys + [user_pub_key|d()] }}"
 
 create_unused_security_groups: false
 
+osp_sandbox: false
+
 default_security_groups:
   - name: BastionSG
     description: >-

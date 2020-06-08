@@ -10,3 +10,5 @@ cf_tags:
 cloud_tags: {}
 
 cloudformation_retries: 0
+
+osp_sandbox: false
