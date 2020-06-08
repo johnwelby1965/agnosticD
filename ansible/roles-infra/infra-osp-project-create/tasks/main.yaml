@@ -1,4 +1,12 @@
 ---
+- name: Generate heat_user_password
+  set_fact:
+    heat_user_password_generated: "{{lookup('password', '/dev/null length=12 chars=ascii_letters,digits')}}"
+
+- name: Use either provided or generated heat_user_password
+  set_fact:
+    heat_user_password: "{{ heat_user_password_provided | default(heat_user_password_generated) }}"
+
 - name: Create project and quota
   when: osp_project_create
   block:
@@ -34,12 +42,6 @@
         floatingip: "{{ quota_fip }}"
         security_group: "{{ quota_sg }}"
         security_group_rule: "{{ quota_sg_rules }}"
-
-    - set_fact:
-        heat_user_password_generated: "{{lookup('password', '/dev/null length=12 chars=ascii_letters,digits')}}"
-
-    - set_fact:
-        heat_user_password: "{{ heat_user_password_provided | default(heat_user_password_generated) }}"
 
     - name: Create user in new project
       os_user:
