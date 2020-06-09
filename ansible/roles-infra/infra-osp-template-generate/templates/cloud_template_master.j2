@@ -148,8 +148,11 @@ resources:
     properties:
       name: {{ iname }}
       flavor: {{ instance.flavor.osp }}
+{% if osp_sandbox %}
+      key_name: {get_resource: {{ sandbox_guid }}-infra_key}
+{% else %}
       key_name: {get_resource: {{ guid }}-infra_key}
-
+{% endif %}
       block_device_mapping_v2:
         - image: {{ instance.image_id | default(instance.image) }}
           delete_on_termination: true
@@ -219,9 +222,15 @@ resources:
 
 outputs:
 
+{% if osp_sandbox %}
+  {{ sandbox_guid }}-infra_key:
+    description: The SSH infra key
+    value: {get_attr: [{{ sandbox_guid }}-infra_key, private_key]}
+{% else %}
   {{ guid }}-infra_key:
     description: The SSH infra key
     value: {get_attr: [{{ guid }}-infra_key, private_key]}
+{% endif %}
 
 {% if additional_fips | default( '' ) | length > 0 %}
 {% for fipname in additional_fips %}
