@@ -9,11 +9,19 @@ description: >-
 
 resources:
 
+{% if osp_sandbox %}
+  {{ sandbox_guid }}-infra_key:
+    type: OS::Nova::KeyPair
+    properties:
+      name: {{ sandbox_guid }}-infra_key
+      save_private_key: true
+{% else %}
   {{ guid }}-infra_key:
     type: OS::Nova::KeyPair
     properties:
       name: {{ guid }}-infra_key
       save_private_key: true
+{% endif %}
 
 {% for network in networks %}
   {{ network['name'] }}-network:

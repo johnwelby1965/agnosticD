@@ -9,29 +9,18 @@ description: >-
 
 resources:
 
+{% if osp_sandbox %}
+  {{ sandbox_guid }}-infra_key:
+    type: OS::Nova::KeyPair
+    properties:
+      name: {{ sandbox_guid }}-infra_key
+      save_private_key: true
+{% else %}
   {{ guid }}-infra_key:
     type: OS::Nova::KeyPair
     properties:
       name: {{ guid }}-infra_key
       save_private_key: true
-
-{% if osp_project_create | bool %}
-  {{ guid }}-project_user:
-    type: OS::Keystone::User
-    properties:
-      name: {{ guid }}-user
-      password: {{ heat_user_password }}
-      domain: Default
-
-  {{ guid }}-project_role_user:
-    type: OS::Keystone::UserRoleAssignment
-    properties:
-      user: {get_resource: {{ guid }}-project_user}
-      roles:
-        - {project: {{ osp_project_name }}, role: _member_}
-        - {project: {{ osp_project_name }}, role: swiftoperator}
-    depends_on:
-      - {{ guid }}-project_user
 {% endif %}
 
 {% for network in networks %}
