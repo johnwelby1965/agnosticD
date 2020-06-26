@@ -42,27 +42,26 @@ Workload roles are a pattern based on standard Ansible roles.  As in Ansible, th
 +
 [source,sh]
 ----
-tree ansible/roles_ocp_workloads/ocp4_workload_example
+tree $HOME/agnosticd/ansible/roles_ocp_workloads/ocp4_workload_example
 ----
 +
 .Sample Output
 [source,sh]
 ----
 ocp4_workload_example
-├── README.md
 ├── defaults
 │   └── main.yml
-├── files
 ├── meta
 │   └── main.yml
 ├── readme.adoc
-├── tasks
-│   ├── main.yml
-│   ├── post_workload.yml
-│   ├── pre_workload.yml
-│   ├── remove_workload.yml
-│   └── workload.yml
-└── templates
+└── tasks
+    ├── main.yml
+    ├── post_workload.yml
+    ├── pre_workload.yml
+    ├── remove_workload.yml
+    └── workload.yml
+
+3 directories, 8 files
 ----
 +
 To create your own new workload role, follow on with this lab.
@@ -79,14 +78,14 @@ export WORKLOADS=$HOME/agnosticd/ansible/roles_ocp_workloads
 +
 [source,sh]
 ----
-mkdir $WORKLOADS/ocp4_workload_${USER}
+mkdir $WORKLOADS/ocp4_workload_${GUID}
 ----
 
 . Copy the example role into your new role directory:
 +
 [source,sh]
 ----
-cp -rv ${WORKLOADS}/ocp4_workload_example/*  ${WORKLOADS}/ocp4_workload_${USER}
+cp -rv ${WORKLOADS}/ocp4_workload_example/*  ${WORKLOADS}/ocp4_workload_${GUID}
 ----
 
 === Default Variables
@@ -98,7 +97,7 @@ Let's edit the files, describe what they do, and update the variables to support
 +
 [source,sh]
 ----
-cd ${WORKLOADS}/ocp4_workload_${USER}
+cd ${WORKLOADS}/ocp4_workload_${GUID}
 ----
 . Edit the default role variables
 +
@@ -143,7 +142,7 @@ ocp4_workload_example_variable_2: "value 2" <5>
 +
 [source,sh]
 ----
-perl -pi -e "s/_example_/_${USER}_/g" defaults/main.yml
+perl -pi -e "s/_example_/_${GUID}_/g" defaults/main.yml
 ----
 +
 . Examine the file to make sure the `_example_` string was replaced correctly.
@@ -248,7 +247,7 @@ cat tasks/workload.yml
 +
 [source,sh]
 ----
-perl -pi -e "s/_example_/_${USER}_/g" tasks/workload.yml
+perl -pi -e "s/_example_/_${GUID}_/g" tasks/workload.yml
 ----
 +
 . Verify your changes produced the desired variable names.
@@ -289,7 +288,7 @@ Executing workloads differs only in minor ways to executing the base configs you
 +
 .. *OCP Username* of the user you want to be on the OpenShift cluster.
 
-In order for you to complete the training easily, you can request access to our shared development cluster. Go to link:[https://labs.opentlc.com^] and request the item "DEV OpenShift Shared Cluster Latest" from the catalog "Shared Cluster Development".
+In order for you to complete the training easily, you can request access to our shared development cluster. Go to link:https://labs.opentlc.com[^] and request the item "DEV OpenShift Shared Cluster Latest" from the catalog "Shared Cluster Development".
 Before you move forward with the execution, please take a minute to login to the cluster console, and also via oc client in your laptop or sandbox bastion, by following the instructions in the final e-mail received.
 
 
@@ -297,10 +296,9 @@ Before you move forward with the execution, please take a minute to login to the
 
 To make testing complex workloads that require many parameters easier, create a `<role name>_vars.yaml` input file to add to your command line.
 
-. Change the variables below to match your workload role.
-Save this file in $HOME.
+. Create a variables file that you can use to pass in new and updated variables as you run your workload.
+Save this file in your role directory as `ocp4_workload_${GUID}_vars.yaml`.
 +
-.$HOME/ocp4_workload_example_vars.yaml
 [source,sh]
 ----
 # You can set any variable
@@ -309,7 +307,7 @@ silent: False
 
 # Set Variable 2
 # Write a comment to Describe your variable
-ocp4_workload_example_variable_2: "My variable 2"
+ocp4_workload_${GUID}_variable_2: "My variable 2"
 ----
 +
 [IMPORTANT]
@@ -326,17 +324,15 @@ Set up Environment Variables indicating the bastion host you want to run this ro
 +
 [source,sh]
 ----
-export GUID=1001 <1>
-export TARGET_HOST="bastion.dev.openshift.opentlc.com" <2>
-export OCP_USERNAME="wkulhane-redhat.com" <3>
-export ANSIBLE_USER="ec2-user" <4>
-export WORKLOAD="ocp4_workload_${USER}" <5>
+export TARGET_HOST="bastion.dev.openshift.opentlc.com" <1>
+export OCP_USERNAME="wkulhane-redhat.com" <2>
+export ANSIBLE_USER="ec2-user" <3>
+export WORKLOAD="ocp4_workload_${GUID}" <4>
 ----
-<1> The GUID of the cluster.
-<2> Change to match your cluster bastion.
-<3> Change to match your OSP username - the user must already exist. In OpenTLC, users will be dynamically created.
-<4> `ec2-user` for AWS, `cloud-user` for OpenStack
-<5> The workload is all your hard work!
+<1> Change to match your cluster bastion.
+<2> Change to match your OSP username - the user must already exist. In OpenTLC, users will be dynamically created.
+<3> `ec2-user` for AWS, `cloud-user` for OpenStack
+<4> The workload is all your hard work!
 +
 [NOTE]
 ====
@@ -353,8 +349,8 @@ The `ansible-playbook` command that you will be running evaluates variables in o
 [source,sh]
 ----
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \ <1>
-    -e @./ocp4_workload_${USER}_vars.yaml \ <2>
-    -e"ocp4_workload_${USER}_variable_2=New Test Variable" <3> \
+    -e @./ocp4_workload_${GUID}_vars.yaml \ <2>
+    -e"ocp4_workload_${GUID}_variable_2=New Test Variable" <3> \
     -e"ansible_user=${ANSIBLE_USER}" \ <4>
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ocp_username=${OCP_USERNAME}" \
@@ -379,7 +375,7 @@ You are now ready to start the deployment of your workload, and the first step o
 # a TARGET_HOST is specified in the command line, without using an inventory file
 cd $HOME/agnosticd/ansible
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
-    -e @$HOME/ocp4_workload_${USER}_vars.yaml \
+    -e @$HOME/agnosticd/ansible/roles_ocp_workloads/ocp4_workload_${GUID}/ocp4_workload_${GUID}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
     -e"ocp_username=${OCP_USERNAME}" \
@@ -425,15 +421,15 @@ export WORKLOAD_VAR_2="Var2: Changed in Environment"
 ----
 cd $HOME/agnosticd/ansible
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
-    -e @$HOME/ocp4_workload_${USER}_vars.yaml \
+    -e @$HOME/agnosticd/ansible/roles_ocp_workloads/ocp4_workload_${GUID}/ocp4_workload_${GUID}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
     -e"ocp_username=${OCP_USERNAME}" \
     -e"ocp_workload=${WORKLOAD}" \
     -e"guid=${GUID}" \
     -e"ACTION=create" \
-    -e"ocp4_workload_${USER}_variable_1='New Test Variable'" \ <1>
-    -e"ocp4_workload_${USER}_variable_2='${WORKLOAD_VAR_2}'" <2>
+    -e"ocp4_workload_${GUID}_variable_1='New Test Variable'" \ <1>
+    -e"ocp4_workload_${GUID}_variable_2='${WORKLOAD_VAR_2}'" <2>
 ----
 +
 <1> Variable 1 uses a literal.
@@ -444,7 +440,7 @@ NOTE: BOTH of these variables override the value in the *_vars.yaml file.
 === Modify from Parameters Files
 
 . Change the vars file you created earlier to reflect a parameter that you don't expect to change during this development session.
-This file should be saved at `$HOME/ocp4_workload_$USER`.
+This file shoudl be saved in your role directory as `ocp4_workload_${GUID}_vars.yaml`.
 +
 [source,sh]
 ----
@@ -454,10 +450,8 @@ silent: False
 
 # Set Variable 2
 # Write a comment about what this variable does
-ocp4_workload_example_variable_2: "Example of my variable 2 for other deployers"
+ocp4_workload_${GUID}_variable_2: "Example of my variable 2 for other deployers"
 ----
-+
-WARNING: Be sure to update the `ocp4_workload_example_variable_2` name to match your role name.
 
 . Remove the `variable_2` you were passing in with the `-e` on the the command line and execute again:
 +
@@ -465,14 +459,14 @@ WARNING: Be sure to update the `ocp4_workload_example_variable_2` name to match 
 ----
 cd $HOME/agnosticd/ansible
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
-    -e @$HOME/ocp4_workload_${USER}_vars.yaml \
+    -e @$HOME/agnosticd/ansible/roles_ocp_workloads/ocp4_workload_${GUID}/ocp4_workload_${GUID}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
     -e"ocp_username=${OCP_USERNAME}" \
     -e"ocp_workload=${WORKLOAD}" \
     -e"guid=${GUID}" \
     -e"ACTION=create" \
-    -e"ocp4_workload_${USER}_variable_1='New Test Variable'"
+    -e"ocp4_workload_${GUID}_variable_1='New Test Variable'"
 ----
 +
 NOTE: Variable 2 is now used from the `<role name>_vars.yaml` file.
@@ -500,10 +494,10 @@ silent: False
 # your workload.
 
 # Documentation for variable 1 (what does it do?)
-ocp4_workload_example_variable_1: "Workload Role Default value 1"
+ocp4_workload_${GUID}_variable_1: "Workload Role Default value 1"
 
 # Documentation for variable 2 (what does it do?)
-ocp4_workload_example_variable_2: "Workload Role Default value 2"
+ocp4_workload_${GUID}_variable_2: "Workload Role Default value 2"
 ----
 
 . Run the command line again, to see what variables actually passed through to the logs.
@@ -512,14 +506,14 @@ ocp4_workload_example_variable_2: "Workload Role Default value 2"
 ----
 cd $HOME/agnosticd/ansible
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
-    -e @$HOME/ocp4_workload_${USER}_vars.yaml \
+    -e @$HOME/agnosticd/ansible/roles_ocp_workloads/ocp4_workload_${GUID}/ocp4_workload_${GUID}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
     -e"ocp_username=${OCP_USERNAME}" \
     -e"ocp_workload=${WORKLOAD}" \
     -e"guid=${GUID}" \
     -e"ACTION=create" \
-    -e"ocp4_workload_${USER}_variable_1=New Test Variable"
+    -e"ocp4_workload_${GUID}_variable_1=New Test Variable"
 ----
 
 . Look at the output and the command and figure out what you need to do in order to preserve the default vars.
