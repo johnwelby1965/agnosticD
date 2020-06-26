@@ -377,8 +377,8 @@ You are now ready to start the deployment of your workload, and the first step o
 [source,sh]
 ----
 # a TARGET_HOST is specified in the command line, without using an inventory file
-cd $HOME/agnosticd/
-ansible-playbook -i ${TARGET_HOST}, -vvv ./ansible/configs/ocp-workloads/ocp-workload.yml \
+cd $HOME/agnosticd/ansible
+ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
     -e @$HOME/ocp4_workload_${USER}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
@@ -423,16 +423,17 @@ export WORKLOAD_VAR_2="Var2: Changed in Environment"
 +
 [source,sh]
 ----
+cd $HOME/agnosticd/ansible
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
-    -e @./ocp4_workload_${USER}_vars.yaml \
+    -e @$HOME/ocp4_workload_${USER}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
     -e"ocp_username=${OCP_USERNAME}" \
     -e"ocp_workload=${WORKLOAD}" \
     -e"guid=${GUID}" \
     -e"ACTION=create" \
-    -e"ocp4_workload_${USER}_variable_1=New Test Variable" \ <1>
-    -e"ocp4_workload_${USER}_variable_2=${WORKLOAD_VAR_2}" <2>
+    -e"ocp4_workload_${USER}_variable_1='New Test Variable'" \ <1>
+    -e"ocp4_workload_${USER}_variable_2='${WORKLOAD_VAR_2}'" <2>
 ----
 +
 <1> Variable 1 uses a literal.
@@ -442,7 +443,8 @@ NOTE: BOTH of these variables override the value in the *_vars.yaml file.
 
 === Modify from Parameters Files
 
-. Change your parameters file to reflect a parameter that you don't expect to change during this development session:
+. Change the vars file you created earlier to reflect a parameter that you don't expect to change during this development session.
+This file should be saved at `$HOME/ocp4_workload_$USER`.
 +
 [source,sh]
 ----
@@ -457,19 +459,20 @@ ocp4_workload_example_variable_2: "Example of my variable 2 for other deployers"
 +
 WARNING: Be sure to update the `ocp4_workload_example_variable_2` name to match your role name.
 
-. Remove the `-e` setting from the command line and execute again:
+. Remove the `variable_2` you were passing in with the `-e` on the the command line and execute again:
 +
 [source,sh]
 ----
+cd $HOME/agnosticd/ansible
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
-    -e @./ocp4_workload_${USER}_vars.yaml \
+    -e @$HOME/ocp4_workload_${USER}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
     -e"ocp_username=${OCP_USERNAME}" \
     -e"ocp_workload=${WORKLOAD}" \
     -e"guid=${GUID}" \
     -e"ACTION=create" \
-    -e"ocp4_workload_${USER}_variable_1=New Test Variable"
+    -e"ocp4_workload_${USER}_variable_1='New Test Variable'"
 ----
 +
 NOTE: Variable 2 is now used from the `<role name>_vars.yaml` file.
@@ -507,8 +510,9 @@ ocp4_workload_example_variable_2: "Workload Role Default value 2"
 +
 [source,sh]
 ----
+cd $HOME/agnosticd/ansible
 ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.yml \
-    -e @./ocp4_workload_${USER}_vars.yaml \
+    -e @$HOME/ocp4_workload_${USER}_vars.yaml \
     -e"ansible_ssh_private_key_file=~/.ssh/keytoyourhost.pem" \
     -e"ansible_user=${ANSIBLE_USER}" \
     -e"ocp_username=${OCP_USERNAME}" \
@@ -517,6 +521,8 @@ ansible-playbook -i ${TARGET_HOST}, -vvv ./configs/ocp-workloads/ocp-workload.ym
     -e"ACTION=create" \
     -e"ocp4_workload_${USER}_variable_1=New Test Variable"
 ----
+
+. Look at the output and the command and figure out what you need to do in order to preserve the default vars.
 
 == Lab Complete
 
